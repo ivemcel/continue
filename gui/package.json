@@ -31,6 +31,7 @@
     "core": "file:../core",
     "dompurify": "^3.0.6",
     "downshift": "^7.6.0",
+    "esbuild": "^0.24.2",
     "lodash": "^4.17.21",
     "minisearch": "^7.0.2",
     "onigasm": "^2.2.5",
