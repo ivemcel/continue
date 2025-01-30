@@ -1,3 +1,6 @@
+/**
+ * 该代码实现了一个基于嵌入向量的代码块检索系统，使用 SQLite 数据库存储代码块的嵌入向量和标签，通过点积计算向量相似度来检索与查询向量最相似的代码块。
+ */
 use ndarray::{Array1, Array2};
 use rusqlite::Connection;
 use std::fs;
