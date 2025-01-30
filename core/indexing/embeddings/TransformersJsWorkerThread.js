@@ -1,3 +1,9 @@
+/**
+ * 这段代码在 Node.js 环境中使用了 worker_threads 来处理异步嵌入计算任务。它主要包括以下几个部分：
+ * 环境设置和模型加载：使用 @xenova/transformers 库来处理 Transformer 模型的嵌入生成。
+ * Worker 线程通信：通过 worker_threads 的 parentPort 实现父进程和子进程之间的消息传递。
+ */
+
 import path from "node:path";
 import {
   env,

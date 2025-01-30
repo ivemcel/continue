@@ -1,3 +1,8 @@
+/**
+ * 这段代码定义了一个抽象类 BaseEmbeddingsProvider，并提供了一个接口 IBaseEmbeddingsProvider，
+ * 两者都用于构建和管理一个 "Embeddings Provider"（嵌入模型提供者）。
+ * 嵌入模型通常用于将文本或其他数据转换成数字化的向量表示（embeddings），以便进行进一步的处理，例如在机器学习模型中进行训练或检索。
+ */
 import {
   EmbedOptions,
   EmbeddingsProvider,

@@ -5,6 +5,9 @@ import { EmbeddingsProviderName } from "../../index.js";
 import { type PipelineType } from "../../vendor/modules/@xenova/transformers/src/transformers.js";
 import BaseEmbeddingsProvider from "./BaseEmbeddingsProvider.js";
 
+/**
+ * TransformersJsEmbeddingsProvider 是一个通过 transformers.js 提供的嵌入生成器，能够利用 all-MiniLM-L6-v2 模型生成文本的嵌入向量。
+ */
 class EmbeddingsPipeline {
   static task: PipelineType = "feature-extraction";
   static model = "all-MiniLM-L6-v2";

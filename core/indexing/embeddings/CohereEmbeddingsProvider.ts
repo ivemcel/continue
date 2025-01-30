@@ -1,3 +1,6 @@
+/**
+ * 这段代码定义了一个 CohereEmbeddingsProvider 类，它继承自 BaseEmbeddingsProvider，用于与 Cohere 的 API 集成来获取文本嵌入（embeddings）
+ */
 import { Response } from "node-fetch";
 import { EmbeddingsProviderName, EmbedOptions } from "../../index.js";
 import { withExponentialBackoff } from "../../util/withExponentialBackoff.js";

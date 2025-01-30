@@ -1,3 +1,6 @@
+/**
+ * 这段代码的主要作用是管理多个类型的 embeddings 提供者（嵌入提供者），并将它们集中管理，便于在代码中进行动态选择和使用。
+ */
 import { EmbeddingsProviderName } from "../../index.js";
 import BaseEmbeddingsProvider from "./BaseEmbeddingsProvider.js";
 import CohereEmbeddingsProvider from "./CohereEmbeddingsProvider.js";
