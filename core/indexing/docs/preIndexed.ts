@@ -14,6 +14,12 @@ export enum S3Buckets {
 
 const AWS_REGION = "us-west-1";
 
+/**
+ * 该函数用于从 S3 下载指定存储桶中的文件，并将文件内容作为字符串返回。
+ * @param bucket 
+ * @param fileName 
+ * @returns 
+ */
 export async function downloadFromS3(
   bucket: string,
   fileName: string,

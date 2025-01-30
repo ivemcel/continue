@@ -1,3 +1,8 @@
+/**
+ * 这段 TypeScript 代码的目的是从网页内容中提取文章组件，并将其分块成适合处理的块（Chunk）。
+ * 它使用了 Mozilla Readability 库来解析 HTML 内容并提取文章的主要部分，
+ * 还利用 jsdom 来解析 DOM 结构。然后，它将文章内容按指定的 maxChunkSize 大小分割成多个块，以便进一步处理或分析。
+ */
 import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
 import { Chunk } from "../../index.js";

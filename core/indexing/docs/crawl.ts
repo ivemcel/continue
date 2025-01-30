@@ -1,3 +1,7 @@
+/**
+ * 这段代码实现了一个网页爬虫，能够递归地爬取一个网站的页面，并收集每个页面中的链接。
+ * 它主要支持两种场景：爬取 GitHub 仓库中的 Markdown 文件路径。爬取一般网页并提取其中的链接。
+ */
 import { Octokit } from "@octokit/rest";
 import cheerio from "cheerio";
 import fetch from "node-fetch";

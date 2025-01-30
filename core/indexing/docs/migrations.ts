@@ -1,3 +1,6 @@
+/**
+ * 这段代码实现了数据库迁移（migrations）的逻辑，主要是针对 LanceDB 和 SQLite 数据库中的表结构进行修改，并且更新配置文件。
+ */
 import { Table } from "vectordb";
 import { editConfigJson, migrate } from "../../util/paths.js";
 import { type Database } from "sqlite";
