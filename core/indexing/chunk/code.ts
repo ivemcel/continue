@@ -236,6 +236,8 @@ async function* getSmartCollapsedChunks(
   }
 }
 
+//这是主要的代码分块函数，它通过 getParserForFile 获取文件的解析器，
+// 并使用 getSmartCollapsedChunks 函数生成语法树的折叠代码块。最后，代码块会按需分发。
 export async function* codeChunker(
   filepath: string,
   contents: string,
