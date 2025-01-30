@@ -1,3 +1,7 @@
+/**
+ * 定义了一个 AutocompleteLruCache 类，用于实现基于 SQLite 的自动补全缓存，结合了 LRU (Least Recently Used) 策略来管理缓存的大小。
+ */
+
 import { Mutex } from "async-mutex";
 import { open } from "sqlite";
 import sqlite3 from "sqlite3";

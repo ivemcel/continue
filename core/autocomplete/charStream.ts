@@ -1,3 +1,9 @@
+/**
+  这段代码包含了三个处理流数据的生成器函数，分别实现了以下功能：
+  onlyWhitespaceAfterEndOfLine：处理流中的换行符，确保返回换行符后仅有空白字符。
+  noFirstCharNewline：跳过流中的第一个换行符（如果存在）。
+  stopAtStopTokens：根据指定的停止标记停止输出，遇到停止标记时停止生成器。
+ */
 export async function* onlyWhitespaceAfterEndOfLine(
   stream: AsyncGenerator<string>,
   endOfLine: string[],

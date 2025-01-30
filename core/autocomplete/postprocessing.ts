@@ -1,3 +1,7 @@
+/**
+ * 这段代码是一个用于对生成的文本完成结果（completion）进行后处理的模块。它对返回的文本进行了一些检查和调整，以确保输出符合特定要求。
+ */
+
 import type { ILLM } from "../index.js";
 import { longestCommonSubsequence } from "../util/lcs.js";
 import { lineIsRepeated } from "./lineStream.js";

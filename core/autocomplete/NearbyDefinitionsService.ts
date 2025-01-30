@@ -6,6 +6,9 @@ interface FileInfo {
   filepath: string;
 }
 
+/**
+ * 定义了一个 NearbyDefinitionsService 类，用于获取指定文件中某一行的定义信息。
+ */
 export class NearbyDefinitionsService {
   static N = 10;
 

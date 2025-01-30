@@ -1,3 +1,9 @@
+/**
+ImportDefinitionsService 是一个用于管理和缓存文件导入信息的服务，主要流程是：
+使用 Tree-sitter 解析文件，查找导入语句。
+通过查找定义信息，获取导入符号的具体位置和内容。
+使用 LRU 缓存存储解析结果，以提高性能，避免重复计算。
+ */
 import { IDE } from "../index.js";
 import { RangeInFileWithContents } from "../commands/util.js";
 import { PrecalculatedLruCache } from "../util/LruCache.js";

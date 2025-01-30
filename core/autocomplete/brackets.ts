@@ -1,6 +1,9 @@
 /**
  * We follow the policy of only completing bracket pairs that we started
  * But sometimes we started the pair in a previous autocomplete suggestion
+ * 
+ * 段代码定义了一个 BracketMatchingService 类，用于处理代码中括号的匹配问题。
+ * 它主要有两个功能：一是在完成自动补全时记录未闭合的括号，二是通过流式数据提供匹配的括号补全，并在不匹配的情况下停止。
  */
 export class BracketMatchingService {
   private openingBracketsFromLastCompletion: string[] = [];

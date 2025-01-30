@@ -1,3 +1,10 @@
+/**
+这段代码的目标是构建一个动态的自动补全提示生成系统。
+它根据代码的上下文（包括前缀、后缀、光标位置等）、最近编辑的代码、导入的符号等多方面信息生成适合的补全建议。其主要处理流程包括：
+解析和分析代码的 AST（抽象语法树），判断是否需要多行补全。
+从外部片段和最近编辑的代码中获取相关的代码片段。
+根据各种策略（如匹配、评分）生成最终的补全建议。
+ */
 import Parser from "web-tree-sitter";
 import { RangeInFileWithContents } from "../commands/util.js";
 import { TabAutocompleteOptions } from "../index.js";

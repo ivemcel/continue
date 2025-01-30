@@ -1,3 +1,7 @@
+/**
+ * 些函数主要用于处理和过滤行流 (LineStream)，它们通过对文本进行各种条件检查（如是否为特定前缀、是否为英文行、是否为代码块行等），
+ * 以便在文本流中筛选、修改或删除特定的内容。
+ */
 import { distance } from "fastest-levenshtein";
 import { LineStream } from "../diff/util.js";
 import { DiffLine } from "../index.js";
