@@ -28,3 +28,29 @@ All indexes must be returned by `getIndexesToBuild` in [`CodebaseIndexer.ts`](./
 ## Known problems:
 
 - `FullTextSearchCodebaseIndex` doesn't differentiate between tags (branch, repo), so results may come from any branch/repo. LanceDB does this by creating separate tables for each tag (see `tableNameForTag`). The chunk index does this with a second table
+
+索引
+Continue 使用标签系统和内容寻址来确保没有文件会被重复索引。当你切换分支时，Continue 只会重新索引那些新修改的文件，并且是我们没有现成副本的文件。通过实现 CodebaseIndex 类，这个系统可以应用于许多不同的“工件”。
+
+artifact：通过索引生成并保存以便后续使用的东西（例如嵌入向量、全文搜索索引或每个文件中的顶级代码片段表）。
+
+cacheKey：一个键，用来决定两个文件是否可以被认为是相同的，从而避免重复索引（此时始终是文件内容的哈希值）。
+
+CodebaseIndex：一个类，它简化了使用索引系统的过程，帮助你生成新的工件。
+
+索引过程包括以下步骤：
+
+检查代码库中所有文件的修改时间戳（这看起来可能有些极端，但检查时间戳比实际读取文件要快得多。Git 也是这么做的）。
+将这些时间戳与一个“目录”（存储在 SQLite 中）进行比较，目录中保存了我们上次索引每个文件的时间戳，以便生成“添加”或“删除”的文件列表。如果文件存在于代码库中，但不在目录中，那么我们必须“添加”该文件。如果文件存在于目录中，但不在代码库中，那么我们必须“删除”该文件。如果文件在两者中都存在，并且在上次索引后已修改，那么我们必须更新该文件。在这种情况下，我们还需要将文件添加到“添加”列表中。
+对于每个需要“添加”的文件，检查它是否已经在其他分支上被索引。这里我们使用一个 SQLite 表作为已索引文件的缓存。如果在该表中找到具有相同 cacheKey 的文件条目，那么我们只需要为该条目添加当前分支的标签（addTag）。否则，我们必须重新“计算”该工件。
+对于每个需要“删除”的文件，检查它是否已在其他分支上被索引。如果只找到一个具有相同 cacheKey 的条目（假设这应该是当前分支的条目，否则可能发生了问题），那么该条目应该被删除，因为没有更多的分支需要这个工件，所以我们要“删除”它。如果该工件有多个标签，那么我们只需删除当前分支的标签（removeTag）。
+在计算出这四个文件列表（“compute”，“delete”，“addTag”，“removeTag”）之后，我们将它们传递给 CodebaseIndex，让它更新其可能拥有的任何特定于索引的存储。许多索引使用 SQLite 和/或 LanceDB。CodebaseIndex 实现了一个名为 "update" 的方法，它接受这四个列表，并在迭代过程中返回进度更新。这些进度更新用于正式标记一个文件为已被索引，以便在扩展程序在索引过程中被关闭时，不会错误地记录进度。
+现有的 CodebaseIndex
+所有索引必须通过 CodebaseIndexer.ts 中的 getIndexesToBuild 返回，才能被使用。
+
+CodeSnippetsCodebaseIndex：使用 tree-sitter 查询获取每个文件中的函数、类和其他顶级代码对象列表。
+FullTextSearchCodebaseIndex：使用 SQLite FTS5 创建全文搜索索引。
+ChunkCodebaseIndex：通过代码结构递归地对文件进行分块，用于像 LanceDbCodebaseIndex 这样的嵌入提供程序。
+LanceDbCodebaseIndex：为每个代码块计算嵌入向量，并将其添加到 LanceDB 向量数据库，同时将元数据存储到 SQLite 中。
+已知问题：
+FullTextSearchCodebaseIndex 无法区分标签（分支、代码库），因此结果可能来自任何分支/代码库。LanceDB 通过为每个标签创建独立的表来实现这一点（见 tableNameForTag）。分块索引通过创建第二个表来实现这一点。

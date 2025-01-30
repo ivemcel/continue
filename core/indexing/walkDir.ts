@@ -1,3 +1,8 @@
+/**
+ * 这段代码实现了一个目录遍历器（DFSWalker），用于深度优先搜索（DFS）遍历指定目录及其子目录中的文件，并根据一定的条件返回文件路径。
+ * 它支持对某些文件和目录进行忽略、过滤和自定义路径处理。以下是详细的中文解释和总结：
+ */
+
 import path from "node:path";
 import { FileType, IDE } from "../index.d.js";
 import ignore, { Ignore } from "ignore";

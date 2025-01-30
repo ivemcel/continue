@@ -1,3 +1,8 @@
+/**
+ * 定义了一个 FullTextSearchCodebaseIndex 类，用于实现基于全文搜索的代码片段索引。
+ * 它使用 SQLite 的 FTS5（Full-Text Search）扩展来支持代码的全文搜索功能，同时与其他表（如 chunks 和 chunk_tags）进行关联。
+ * 该类实现了 CodebaseIndex 接口，用于处理代码片段的索引、更新和检索操作。
+ */
 import {
   BranchAndDir,
   Chunk,

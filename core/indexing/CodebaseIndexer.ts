@@ -1,3 +1,7 @@
+/**
+ * 这段代码实现了一个 CodebaseIndexer 类，用于将代码库中的文件索引化。它使用了多个索引类型（如 ChunkCodebaseIndex、LanceDbIndex 等），
+ * 并通过异步的方式处理索引生成的任务。该过程通过分批次地处理文件并结合 worker_threads 提供的并发功能进行优化，以处理可能非常大的代码库。
+ */
 import { ConfigHandler } from "../config/ConfigHandler.js";
 import { IContinueServerClient } from "../continueServer/interface.js";
 import { IDE, IndexTag, IndexingProgressUpdate } from "../index.js";

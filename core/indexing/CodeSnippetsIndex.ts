@@ -1,3 +1,8 @@
+/**
+ * 这段代码定义了一个 CodeSnippetsCodebaseIndex 类，主要用于管理代码片段（Code Snippets）索引。
+ * 它通过解析代码文件来提取代码片段，并将其存储到 SQLite 数据库中，同时支持为每个代码片段添加、删除、修改标签。该
+ * 类实现了 CodebaseIndex 接口，支持通过 SQL 操作进行高效的数据存储和查询。
+ */
 import type {
   ChunkWithoutID,
   ContextItem,
