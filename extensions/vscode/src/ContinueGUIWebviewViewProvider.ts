@@ -37,6 +37,11 @@ export class ContinueGUIWebviewViewProvider
     });
   }
 
+  /**
+   * 使用 handleWebviewMessage 方法处理 Webview 发来的消息，尤其是处理日志消息并输出到 VS Code 的输出面板。
+   * @param message 
+   * @returns 
+   */
   private async handleWebviewMessage(message: any) {
   if (message.messageType === "log") {
     const settings = vscode.workspace.getConfiguration("continue");
@@ -52,6 +57,12 @@ export class ContinueGUIWebviewViewProvider
   }
 }
 
+  /**
+   * resolveWebviewView 方法负责在 Webview 被加载时设置其内容，处理与 Webview 的交互。
+   * @param webviewView
+   * @param _context 
+   * @param _token 
+   */
   resolveWebviewView(
     webviewView: vscode.WebviewView,
     _context: vscode.WebviewViewResolveContext,
@@ -114,6 +125,15 @@ export class ContinueGUIWebviewViewProvider
     );
   }
 
+  /**
+   * getSidebarContent 方法根据不同的开发模式（生产模式或开发模式）生成 Webview 的 HTML 内容，并插入动态数据，如主题、工作区路径等。
+   * @param context 
+   * @param panel 
+   * @param page 
+   * @param edits 
+   * @param isFullScreen 
+   * @returns 
+   */
   getSidebarContent(
     context: vscode.ExtensionContext | undefined,
     panel: vscode.WebviewPanel | vscode.WebviewView,

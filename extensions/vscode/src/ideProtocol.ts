@@ -33,7 +33,9 @@ import {
 } from "./util/vscode";
 import { VsCodeWebviewProtocol } from "./webviewProtocol";
 
+// 定义 VsCodeIde 类实现 IDE 接口
 class VsCodeIde implements IDE {
+  // 实例化 VSCode IDE 工具
   ideUtils: VsCodeIdeUtils;
 
   constructor(
@@ -42,9 +44,20 @@ class VsCodeIde implements IDE {
   ) {
     this.ideUtils = new VsCodeIdeUtils();
   }
+  
+  /**
+   * 返回当前操作系统的路径分隔符
+   * @returns 
+   */
   pathSep(): Promise<string> {
     return Promise.resolve(this.ideUtils.path.sep);
   }
+ 
+  /**
+   * 检查文件是否存在
+   * @param filepath 
+   * @returns 
+   */
   async fileExists(filepath: string): Promise<boolean> {
     return vscode.workspace.fs.stat(uriFromFilePath(filepath)).then(
       () => true,
@@ -52,6 +65,11 @@ class VsCodeIde implements IDE {
     );
   }
 
+  /**
+   * 跳转到定义
+   * @param location 
+   * @returns 
+   */
   async gotoDefinition(location: Location): Promise<RangeInFile[]> {
     const result = await executeGotoProvider({
       uri: location.filepath,
@@ -63,6 +81,10 @@ class VsCodeIde implements IDE {
     return result;
   }
 
+  /**
+   * 监听编辑器活动变化
+   * @param callback   
+   */
   onDidChangeActiveTextEditor(callback: (filepath: string) => void): void {
     vscode.window.onDidChangeActiveTextEditor((editor) => {
       if (editor) {
@@ -71,9 +93,15 @@ class VsCodeIde implements IDE {
     });
   }
 
+  // GitHub 授权 token
   private authToken: string | undefined;
+  // 是否已请求 GitHub 登录
   private askedForAuth = false;
 
+  /**
+   * 获取 GitHub 授权 token
+   * @returns   
+   */
   async getGitHubAuthToken(): Promise<string | undefined> {
     // Saved auth token
     if (this.authToken) {
@@ -191,14 +219,27 @@ class VsCodeIde implements IDE {
     return undefined;
   }
 
+  /**
+   * 显示信息弹窗
+   * @param message 
+   */
   async infoPopup(message: string): Promise<void> {
     vscode.window.showInformationMessage(message);
   }
 
+  /**
+   * 显示错误弹窗
+   * @param message 
+   */
   async errorPopup(message: string): Promise<void> {
     vscode.window.showErrorMessage(message);
   }
 
+  /**
+   * 获取 Git 仓库名
+   * @param dir 
+   * @returns 
+   */
   async getRepoName(dir: string): Promise<string | undefined> {
     const repo = await this.getRepo(vscode.Uri.file(dir));
     const remotes = repo?.state.remotes;
@@ -217,6 +258,11 @@ class VsCodeIde implements IDE {
     return ownerAndRepo?.join("/");
   }
 
+  /**
+   * 获取标签
+   * @param artifactId   
+   * @returns 
+   */
   async getTags(artifactId: string): Promise<IndexTag[]> {
     const workspaceDirs = await this.getWorkspaceDirs();
 
@@ -232,6 +278,11 @@ class VsCodeIde implements IDE {
 
     return tags;
   }
+
+  /**
+   * 获取 IDE 信息
+   * @returns 
+   */
   getIdeInfo(): Promise<IdeInfo> {
     return Promise.resolve({
       ideType: "vscode",
@@ -243,6 +294,13 @@ class VsCodeIde implements IDE {
           .version,
     });
   }
+
+  /**
+   * 从文件中读取范围内容
+   * @param filepath 
+   * @param range 
+   * @returns 
+   */
   readRangeInFile(filepath: string, range: Range): Promise<string> {
     return this.ideUtils.readRangeInFile(
       filepath,
@@ -253,6 +311,11 @@ class VsCodeIde implements IDE {
     );
   }
 
+  /**
+   * 获取文件的最后修改时间
+   * @param files 
+   * @returns 
+   */
   async getLastModified(files: string[]): Promise<{ [path: string]: number }> {
     const pathToLastModified: { [path: string]: number } = {};
     await Promise.all(
@@ -265,10 +328,19 @@ class VsCodeIde implements IDE {
     return pathToLastModified;
   }
 
+  /**
+   * 获取 Git 仓库信息
+   * @param dir   
+   * @returns 
+   */
   async getRepo(dir: vscode.Uri): Promise<Repository | undefined> {
     return this.ideUtils.getRepo(dir);
   }
 
+  /**
+   * 获取 telemetry 是否启用
+   * @returns 
+   */
   async isTelemetryEnabled(): Promise<boolean> {
     const globalEnabled = vscode.env.isTelemetryEnabled;
     const continueEnabled: boolean =
@@ -278,6 +350,10 @@ class VsCodeIde implements IDE {
     return globalEnabled && continueEnabled;
   }
 
+  /**
+   * 获取唯一机器 ID
+   * @returns 
+   */
   getUniqueId(): Promise<string> {
     return Promise.resolve(vscode.env.machineId);
   }
@@ -286,14 +362,29 @@ class VsCodeIde implements IDE {
     return await this.ideUtils.getDiff();
   }
 
+  /**
+   * 获取终端内容
+   * @returns 
+   */
   async getTerminalContents(): Promise<string> {
     return await this.ideUtils.getTerminalContents(1);
   }
 
+  /**
+   * 获取调试局部变量
+   * @param threadIndex 
+   * @returns 
+   */
   async getDebugLocals(threadIndex: number): Promise<string> {
     return await this.ideUtils.getDebugLocals(threadIndex);
   }
 
+  /**
+   * 获取调试调用堆栈
+   * @param threadIndex 
+   * @param stackDepth 
+   * @returns 
+   */
   async getTopLevelCallStackSources(
     threadIndex: number,
     stackDepth: number,
@@ -307,6 +398,11 @@ class VsCodeIde implements IDE {
     return await this.ideUtils.getAvailableThreads();
   }
 
+
+/**
+ * 获取工作区配置
+ * @returns 
+ */
   async getWorkspaceConfigs() {
     const workspaceDirs =
       vscode.workspace.workspaceFolders?.map((folder) => folder.uri) || [];
@@ -337,10 +433,18 @@ class VsCodeIde implements IDE {
     return allDirs;
   }
 
+  /**
+   * 获取工作区目录
+   * @returns 
+   */
   async getWorkspaceDirs(): Promise<string[]> {
     return this.ideUtils.getWorkspaceDirectories();
   }
 
+  /**
+   * 获取 Continue 全局路径
+   * @returns 
+   */
   async getContinueDir(): Promise<string> {
     return getContinueGlobalPath();
   }
@@ -360,6 +464,12 @@ class VsCodeIde implements IDE {
     this.ideUtils.openFile(path);
   }
 
+  /**
+   * 显示代码行
+   * @param filepath 
+   * @param startLine 
+   * @param endLine 
+   */
   async showLines(
     filepath: string,
     startLine: number,
@@ -378,6 +488,10 @@ class VsCodeIde implements IDE {
     });
   }
 
+  /**
+   * 执行终端命令
+   * @param command 
+   */
   async runCommand(command: string): Promise<void> {
     if (vscode.window.terminals.length) {
       const terminal =
@@ -413,6 +527,10 @@ class VsCodeIde implements IDE {
     return vscode.window.activeTextEditor?.document.uri.fsPath;
   }
 
+  /**
+   * 获取固定文件
+   * @returns 
+   */
   async getPinnedFiles(): Promise<string[]> {
     const tabArray = vscode.window.tabGroups.all[0].tabs;
 
@@ -421,6 +539,12 @@ class VsCodeIde implements IDE {
       .map((t) => (t.input as vscode.TabInputText).uri.fsPath);
   }
 
+  /**
+   * 子进程命令执行
+   * @param query 
+   * @param dir 
+   * @returns 
+   */
   private async _searchDir(query: string, dir: string): Promise<string> {
     const p = child_process.spawn(
       path.join(
@@ -454,6 +578,11 @@ class VsCodeIde implements IDE {
     });
   }
 
+  /**
+   * 获取搜索结果
+   * @param query 
+   * @returns 
+   */
   async getSearchResults(query: string): Promise<string> {
     const results = [];
     for (const dir of await this.getWorkspaceDirs()) {
@@ -463,6 +592,11 @@ class VsCodeIde implements IDE {
     return results.join("\n\n");
   }
 
+  /**
+   * 获取文件问题
+   * @param filepath 
+   * @returns 
+   */
   async getProblems(filepath?: string | undefined): Promise<Problem[]> {
     const uri = filepath
       ? vscode.Uri.file(filepath)
@@ -485,6 +619,11 @@ class VsCodeIde implements IDE {
     });
   }
 
+  /**
+   * 执行子进程命令
+   * @param command 
+   * @returns 
+   */
   async subprocess(command: string): Promise<[string, string]> {
     return new Promise((resolve, reject) => {
       exec(command, (error, stdout, stderr) => {
@@ -509,6 +648,10 @@ class VsCodeIde implements IDE {
     return vscode.workspace.fs.readDirectory(uriFromFilePath(dir)) as any;
   }
 
+  /**
+   * 获取 IDE 设置
+   * @returns 
+   */
   getIdeSettingsSync(): IdeSettings {
     const settings = vscode.workspace.getConfiguration("continue");
     const remoteConfigServerUrl = settings.get<string | undefined>(

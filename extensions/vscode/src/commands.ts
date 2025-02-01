@@ -1,4 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+/**
+ * 这段代码主要是用于 VS Code 插件的命令注册和相关功能的实现。
+ * 它注册了一系列命令并与 VS Code 的界面元素（如侧边栏、面板、编辑器等）进行交互，
+ * 提供了一些自动化功能，如代码编辑、批注、调试和界面控制。
+ */
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
@@ -159,18 +164,32 @@ async function addEntireFileToContext(
   });
 }
 
+/**
+ * 创建一个命令映射函数，返回一个命令名称到操作的映射
+ * @param ide 
+ * @param extensionContext 
+ * @param sidebar 
+ * @param configHandler 
+ * @param diffManager 
+ * @param verticalDiffManager 
+ * @param continueServerClientPromise 
+ * @param battery 
+ * @param quickEdit 
+ * @param core 
+ * @returns 
+ */
 // Copy everything over from extension.ts
 const commandsMap: (
-  ide: IDE,
-  extensionContext: vscode.ExtensionContext,
-  sidebar: ContinueGUIWebviewViewProvider,
-  configHandler: ConfigHandler,
-  diffManager: DiffManager,
-  verticalDiffManager: VerticalPerLineDiffManager,
-  continueServerClientPromise: Promise<ContinueServerClient>,
-  battery: Battery,
-  quickEdit: QuickEdit,
-  core: Core,
+  ide: IDE, // IDE实例，提供IDE的相关功能
+  extensionContext: vscode.ExtensionContext, // 扩展上下文，用于管理扩展生命周期
+  sidebar: ContinueGUIWebviewViewProvider, // 侧边栏对象，用于与侧边栏交互
+  configHandler: ConfigHandler, // 配置处理器，用于加载和管理配置
+  diffManager: DiffManager, // 差异管理器，用于处理文件差异
+  verticalDiffManager: VerticalPerLineDiffManager, // 垂直差异管理器，用于处理行级别的差异
+  continueServerClientPromise: Promise<ContinueServerClient>, // Continue服务器客户端，用于与服务端进行通信
+  battery: Battery, // 电池管理器，用于检测设备的电池状态
+  quickEdit: QuickEdit, // 快速编辑工具，用于快速修改代码
+  core: Core, // 核心功能对象，提供一些系统级操作
 ) => { [command: string]: (...args: any) => any } = (
   ide,
   extensionContext,
@@ -184,16 +203,17 @@ const commandsMap: (
   core,
 ) => {
   /**
+   * 异步函数，流式编辑代码，向垂直差异管理器发送一个内联编辑请求
    * Streams an inline edit to the vertical diff manager.
    *
    * This function retrieves the configuration, determines the appropriate model title,
    * increments the FTC count, and then streams an edit to the
    * vertical diff manager.
    *
-   * @param  promptName - The key for the prompt in the context menu configuration.
-   * @param  fallbackPrompt - The prompt to use if the configured prompt is not available.
-   * @param  [onlyOneInsertion] - Optional. If true, only one insertion will be made.
-   * @param  [range] - Optional. The range to edit if provided.
+   * @param  promptName - The key for the prompt in the context menu configuration. 配置中的提示名称
+   * @param  fallbackPrompt - The prompt to use if the configured prompt is not available. 如果配置中没有找到提示名称，使用此备用提示
+   * @param  [onlyOneInsertion] - Optional. If true, only one insertion will be made.是否只插入一次
+   * @param  [range] - Optional. The range to edit if provided. 可选的编辑范围
    * @returns
    */
   async function streamInlineEdit(
@@ -202,8 +222,10 @@ const commandsMap: (
     onlyOneInsertion?: boolean,
     range?: vscode.Range,
   ) {
+     // 加载配置
     const config = await configHandler.loadConfig();
 
+    // 获取模型标题，优先使用配置中的标题，如果没有，则向侧边栏请求
     const modelTitle =
       config.experimental?.modelRoles?.inlineEdit ??
       (await sidebar.webviewProtocol.request(
@@ -213,6 +235,7 @@ const commandsMap: (
 
     sidebar.webviewProtocol.request("incrementFtc", undefined);
 
+    // 将编辑内容流式传输到垂直差异管理器
     await verticalDiffManager.streamEdit(
       config.experimental?.contextMenuPrompts?.[promptName] ?? fallbackPrompt,
       modelTitle,
@@ -226,29 +249,38 @@ const commandsMap: (
     "continue.acceptDiff": async (newFilepath?: string | vscode.Uri) => {
       captureCommandTelemetry("acceptDiff");
 
+      // 如果路径是URI类型，转换为文件路径
       if (newFilepath instanceof vscode.Uri) {
         newFilepath = newFilepath.fsPath;
       }
+       // 清除相关文件的差异
       verticalDiffManager.clearForFilepath(newFilepath, true);
+      // 接受差异并处理
       await diffManager.acceptDiff(newFilepath);
     },
+    // 拒绝差异
     "continue.rejectDiff": async (newFilepath?: string | vscode.Uri) => {
       captureCommandTelemetry("rejectDiff");
 
       if (newFilepath instanceof vscode.Uri) {
         newFilepath = newFilepath.fsPath;
       }
+      // 清除相关文件的差异
       verticalDiffManager.clearForFilepath(newFilepath, false);
+      // 拒绝差异并处理
       await diffManager.rejectDiff(newFilepath);
     },
+    // 接受垂直差异块
     "continue.acceptVerticalDiffBlock": (filepath?: string, index?: number) => {
       captureCommandTelemetry("acceptVerticalDiffBlock");
       verticalDiffManager.acceptRejectVerticalDiffBlock(true, filepath, index);
     },
+    // 拒绝垂直差异块
     "continue.rejectVerticalDiffBlock": (filepath?: string, index?: number) => {
       captureCommandTelemetry("rejectVerticalDiffBlock");
       verticalDiffManager.acceptRejectVerticalDiffBlock(false, filepath, index);
     },
+    // 快速修复
     "continue.quickFix": async (
       range: vscode.Range,
       diagnosticMessage: string,
@@ -261,11 +293,15 @@ const commandsMap: (
 
       vscode.commands.executeCommand("continue.continueGUIView.focus");
     },
+
+    // 默认快速操作，传递遥测数据
     // Passthrough for telemetry purposes
     "continue.defaultQuickAction": async (args: QuickEditShowParams) => {
       captureCommandTelemetry("defaultQuickAction");
       vscode.commands.executeCommand("continue.quickEdit", args);
     },
+
+     // 自定义快速操作，发送到聊天
     "continue.customQuickActionSendToChat": async (
       prompt: string,
       range: vscode.Range,
@@ -276,6 +312,8 @@ const commandsMap: (
 
       vscode.commands.executeCommand("continue.continueGUIView.focus");
     },
+        
+    // 自定义快速操作，流式内联编辑
     "continue.customQuickActionStreamInlineEdit": async (
       prompt: string,
       range: vscode.Range,
@@ -284,18 +322,28 @@ const commandsMap: (
 
       streamInlineEdit("docstring", prompt, false, range);
     },
+
+    // 切换辅助栏显示
     "continue.toggleAuxiliaryBar": () => {
       vscode.commands.executeCommand("workbench.action.toggleAuxiliaryBar");
     },
+
+    // 强制重新索引代码库
     "continue.codebaseForceReIndex": async () => {
       core.invoke("index/forceReIndex", undefined);
     },
+
+    // 索引文档
     "continue.docsIndex": async () => {
       core.invoke("context/indexDocs", { reIndex: false });
     },
+
+    // 重新索引文档
     "continue.docsReIndex": async () => {
       core.invoke("context/indexDocs", { reIndex: true });
     },
+
+    // 聚焦Continue输入框
     "continue.focusContinueInput": async () => {
       const fullScreenTab = getFullScreenTab();
       if (!fullScreenTab) {
@@ -308,6 +356,8 @@ const commandsMap: (
       sidebar.webviewProtocol?.request("focusContinueInput", undefined);
       await addHighlightedCodeToContext(sidebar.webviewProtocol);
     },
+
+    // 聚焦Continue输入框，但不清空输入内容
     "continue.focusContinueInputWithoutClear": async () => {
       const fullScreenTab = getFullScreenTab();
 
@@ -339,6 +389,8 @@ const commandsMap: (
         await addHighlightedCodeToContext(sidebar.webviewProtocol);
       }
     },
+
+    // 快速编辑
     "continue.quickEdit": async (args: QuickEditShowParams) => {
       captureCommandTelemetry("quickEdit");
       quickEdit.show(args);

@@ -8,6 +8,10 @@ import * as vscode from "vscode";
 import { IMessenger } from "../../../core/util/messenger";
 import { getExtensionUri } from "./util/vscode";
 
+/**
+  这个函数打开一个教程文件 continue_tutorial.py，并根据操作系统（非 macOS 时）修改文件中的快捷键符号（⌘ 更换为 Ctrl）。
+  然后它会在 VS Code 中打开并显示该文件。
+ */
 export async function showTutorial() {
   const tutorialPath = path.join(
     getExtensionUri().fsPath,
@@ -26,14 +30,24 @@ export async function showTutorial() {
   await vscode.window.showTextDocument(doc, { preview: false });
 }
 
+/**
+  该类实现了 IMessenger 接口，用于处理 Webview 与 VS Code 之间的消息传递。
+  send 方法：发送消息到 Webview，支持可选的 messageId。
+  on 方法：注册消息处理函数，处理来自 Webview 的消息。
+  webview：处理 Webview 的初始化与消息接收，监听 Webview 发来的消息并调用相应的处理函数。
+  错误处理：如果发生错误，会发送错误信息，并提供用户可能的解决方案，如重新登录、添加 API 密钥等。
+  request 方法：发送请求到 Webview 并等待响应。如果 Webview 未准备好，会进行重试。
+ */
 export class VsCodeWebviewProtocol
   implements IMessenger<FromWebviewProtocol, ToWebviewProtocol>
 {
+  // 存储不同消息类型的监听器
   listeners = new Map<
     keyof FromWebviewProtocol,
     ((message: Message) => any)[]
   >();
 
+  // 发送消息的方法
   send(messageType: string, data: any, messageId?: string): string {
     const id = messageId ?? uuidv4();
     this.webview?.postMessage({
@@ -44,6 +58,7 @@ export class VsCodeWebviewProtocol
     return id;
   }
 
+  // 监听消息的方法
   on<T extends keyof FromWebviewProtocol>(
     messageType: T,
     handler: (
@@ -56,17 +71,21 @@ export class VsCodeWebviewProtocol
     this.listeners.get(messageType)?.push(handler);
   }
 
+  // 内部变量：webview 和事件监听器
   _webview?: vscode.Webview;
   _webviewListener?: vscode.Disposable;
 
+  // 获取 webview
   get webview(): vscode.Webview | undefined {
     return this._webview;
   }
 
+  // 设置 webview，初始化消息监听器
   set webview(webView: vscode.Webview) {
-    this._webview = webView;
-    this._webviewListener?.dispose();
+    this._webview = webView;  // 设置 webview
+    this._webviewListener?.dispose();  // 清除旧的监听器
 
+    // 为 webview 设置新的消息接收事件监听器
     this._webviewListener = this._webview.onDidReceiveMessage(async (msg) => {
       if (!msg.messageType || !msg.messageId) {
         throw new Error(`Invalid webview protocol msg: ${JSON.stringify(msg)}`);
@@ -75,15 +94,18 @@ export class VsCodeWebviewProtocol
       const respond = (message: any) =>
         this.send(msg.messageType, message, msg.messageId);
 
+      // 获取当前消息类型的处理函数列表
       const handlers = this.listeners.get(msg.messageType) || [];
       for (const handler of handlers) {
         try {
+          // 调用处理函数并获取响应
           const response = await handler(msg);
           if (
             response &&
             typeof response[Symbol.asyncIterator] === "function"
           ) {
             let next = await response.next();
+            // 如果响应是一个异步迭代器，循环获取并发送每一项
             while (!next.done) {
               respond(next.value);
               next = await response.next();
@@ -187,6 +209,7 @@ export class VsCodeWebviewProtocol
     });
   }
 
+  // 构造函数，接受一个用于重新加载配置的回调函数
   constructor(private readonly reloadConfig: () => void) {}
   invoke<T extends keyof FromWebviewProtocol>(
     messageType: T,
