@@ -300,10 +300,15 @@ export class Core {
       return items || [];
     });
 
+    // 监听 "context/getContextItems" 事件，当事件被触发时，执行该异步回调
     on("context/getContextItems", async (msg) => {
+      // 从事件数据 (msg.data) 中解构出所需的字段：name (提供者的名称)，query (查询内容)，fullInput (完整输入)，selectedCode (选中的代码)
       const { name, query, fullInput, selectedCode } = msg.data;
+      // 获取当前的配置对象，await 表示这是一个异步操作，可能需要加载配置
       const config = await this.config();
+      // 获取当前选择的模型（llm），这也是一个异步操作
       const llm = await this.getSelectedModel();
+      // 在配置中查找匹配的上下文提供者，contextProviders 是配置中的一个数组，寻找 title 与传入的 name 匹配的提供者
       const provider = config.contextProviders?.find(
         (provider) => provider.description.title === name,
       );
@@ -311,24 +316,28 @@ export class Core {
         return [];
       }
 
+      // 如果找到了对应的provider，继续处理
       try {
         const id: ContextItemId = {
           providerTitle: provider.description.title,
           itemId: uuidv4(),
         };
-
+        
+        // 调用 provider 的 getContextItems 方法获取上下文项
         const items = await provider.getContextItems(query, {
-          config,
-          llm,
-          embeddingsProvider: config.embeddingsProvider,
-          fullInput,
-          ide,
-          selectedCode,
-          reranker: config.reranker,
+          config, // 配置对象
+          llm,  // 当前选择的模型
+          embeddingsProvider: config.embeddingsProvider, // 嵌入提供者，用于生成语义向量
+          fullInput, // 完整的输入文本
+          ide,  // 当前的 IDE（集成开发环境），可能用于调试或显示信息
+          selectedCode, // 当前选中的代码
+          reranker: config.reranker, // 重排器，用于对上下文项进行重新排序
           fetch: (url, init) =>
+            // 定制的 fetch 方法，允许传递额外的请求选项
             fetchwithRequestOptions(url, init, config.requestOptions),
         });
 
+        // 记录操作数据，表示使用了特定的上下文提供者
         Telemetry.capture(
           "useContextProvider",
           {
@@ -337,6 +346,7 @@ export class Core {
           true,
         );
 
+        // 返回获取到的上下文项，并给每个项附加上一个唯一的 id
         return items.map((item) => ({
           ...item,
           id,

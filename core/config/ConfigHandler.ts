@@ -59,17 +59,25 @@ class ProfileLifecycleManager {
     return this.profileLoader.doLoadConfig();
   }
 
+  /**
+   * 该方法负责加载配置并返回一个 ContinueConfig 对象。async意味着这个方法是一个异步方法，返回的是一个 Promise 对象。
+   * @param additionalContextProviders 接受一个 IContextProvider 类型的数组，表示额外的上下文提供者。
+   * @returns 该方法返回一个 Promise，它解析为 ContinueConfig 对象。
+   */
   async loadConfig(
     additionalContextProviders: IContextProvider[],
   ): Promise<ContinueConfig> {
     // If we already have a config, return it
+    // 检查已有配置。如果 this.savedConfig 存在（表示配置已经加载过），则直接返回 this.savedConfig。
     if (this.savedConfig) {
       return this.savedConfig;
+    // 检查是否有正在加载的配置：如果配置正在加载（this.pendingConfigPromise 存在），则直接返回这个 Promise，防止多次并发加载配置。
     } else if (this.pendingConfigPromise) {
       return this.pendingConfigPromise;
     }
 
     // Set pending config promise
+    // 创建并启动配置加载
     this.pendingConfigPromise = new Promise(async (resolve, reject) => {
       const newConfig = await this.profileLoader.doLoadConfig();
 
@@ -99,13 +107,21 @@ class ProfileLifecycleManager {
   }
 }
 
+/**
+ * 配置管理核心类，负责管理不同的配置文件，并提供方法进行配置加载、切换等操作。
+ */
 export class ConfigHandler {
+  //用于保存全局状态信息。
   private readonly globalContext = new GlobalContext();
+  //用于存储额外的上下文提供者。
   private additionalContextProviders: IContextProvider[] = [];
+  //存储配置文件的生命周期管理器实例。
   private profiles: ProfileLifecycleManager[];
+  // 当前选择的配置文件ID。
   private selectedProfileId: string;
 
   constructor(
+    //private 表示这个属性只能在类内部访问，readonly 表示该属性一旦初始化后不能被修改。
     private readonly ide: IDE,
     private ideSettingsPromise: Promise<IdeSettings>,
     private readonly writeLog: (text: string) => Promise<void>,
@@ -270,6 +286,11 @@ export class ConfigHandler {
     return this.profiles.map((p) => p.profileDescription);
   }
 
+  /**
+   * async 关键字表示这是一个异步函数，它会自动返回一个 Promise 对象，表示函数的执行结果在未来某个时刻会得到返回。
+   * 由于函数返回一个 Promise<ContinueConfig>，我们可以通过 await 等待它解析出一个 ContinueConfig 对象。
+   * @returns loadConfig 会返回一个 Promise，它会解析为 ContinueConfig 类型的配置对象。
+   */
   async loadConfig(): Promise<ContinueConfig> {
     return this.currentProfile.loadConfig(this.additionalContextProviders);
   }
