@@ -15,10 +15,12 @@ class CodebaseContextProvider extends BaseContextProvider {
     renderInlineAs: "",
   };
 
+  // 异步方法 getContextItems 用于根据查询和附加信息获取上下文项
   async getContextItems(
     query: string,
     extras: ContextProviderExtras,
   ): Promise<ContextItem[]> {
+    // 调用 retrieveContextItemsFromEmbeddings 函数来获取上下文项
     return retrieveContextItemsFromEmbeddings(extras, this.options, undefined);
   }
   async load(): Promise<void> {}
